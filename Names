@@ -1,0 +1,12 @@
+public class Names {
+    int appid;
+    String name;
+    
+    public Names(int appid, String name) {
+        this.appid = appid;
+        this.name = name;
+    }
+    public String toString() {
+        return "(appid: "+appid+"), (name: "+name+")";
+    }
+}
