@@ -1,39 +1,21 @@
 import javax.json.*;
+import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
-import java.util.Objects;
+import java.net.URL;
 
 public class JavaDataApp {
-    public static void main(String[] args) {
-        System.out.println(getAppID("DOOM Eternal"));
-    }
-    public static int getAppID(String appName){
-        String appListURL = "https://api.steampowered.com/ISteamApps/GetAppList/v2/";
-        InputStream is = openURL(appListURL);
+    public static void main(String[] args) throws IOException {
+        String URL = "https://rest.coinapi.io/v1/exchangerate/BTC/USD?apikey=E45F127F-46D7-46C3-8C5E-4A96413B319C";
+        InputStream is = openURL(URL);
         JsonReader jsonReader = Json.createReader(is);
         JsonStructure js = jsonReader.read();
         jsonReader.close();
         closeStream(is);
         JsonArray jsa = null;
         JsonObject jso = null;
-        if (js instanceof JsonObject) {
-            jso = (JsonObject) js;
-            //jsa = jso.getJsonArray("incidents");  // API v2
-            jso = jso.getJsonObject("applist");
-            jsa = jso.getJsonArray("apps");
-
-        } else {
-            jsa = (JsonArray)js;
-        }
-        int s = jsa.size();
-        for (int i=0; i<s; i++){
-            JsonObject jo = jsa.getJsonObject(i);
-            String name = jo.getString("name");
-            if (Objects.equals(name, appName)){
-                return jo.getInt("appid");
-            }
-        }
-        return 0;
+        jso = (JsonObject) js;
+        JsonNumber r = jso.getJsonNumber("rate");
+        System.out.print(r);
     }
 
     // copied from Jason Millers Bike project
