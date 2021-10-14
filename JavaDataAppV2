@@ -1,0 +1,105 @@
+import javax.json.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.*;
+import java.util.Scanner;
+
+/*
+ * possibly use the JSON Deserializer
+ * https://www.tutorialspoint.com/how-to-deserialize-a-json-to-java-object-using-the-flexjson-in-java
+ */
+
+public class JavaDataApp {     
+    String ticker, URL;
+
+    public JavaDataApp() {
+    }
+
+    //Recieves user input
+    public String input() {
+        Scanner in = new Scanner(System.in);
+        System.out.println("Enter any stock ticker or press x to exit: ");
+        ticker = in.next();
+        if (ticker.equals("x")) {
+            return "";
+        }
+        return buildURL(ticker);
+    }
+
+    //Generates the URL using user input
+    public String buildURL(String stock) {
+        String URL = "https://rest.coinapi.io/v1/exchangerate/"+ticker+"/USD?apikey=E45F127F-46D7-46C3-8C5E-4A96413B319C";
+        return URL;
+    }
+
+    //Builds the output string
+    public void printStockString(JsonObject stock) {
+        JsonString time = stock.getJsonString("time");
+        JsonString base = stock.getJsonString("asset_id_base");
+        JsonString quote = stock.getJsonString("asset_id_quote");
+        JsonNumber rate = stock.getJsonNumber("rate");
+
+        String string = String.format("Time: %s\nTicker: %s\nQuote: %s",time, base, quote);
+        System.out.println(string);
+        System.out.println("Price: "+rate);
+    }
+
+    //Handles the URL 
+    public void handleURL(String http) {
+        InputStream is = openURL(http);
+        try {
+            JsonReader jsonReader = Json.createReader(is);
+            JsonStructure js = jsonReader.read();
+            jsonReader.close();
+            closeStream(is);
+            JsonObject jso = null;
+            jso = (JsonObject) js;
+            printStockString(jso);
+        } catch (Exception e) {
+            System.out.println("This ticker doesn't seem to be in our records.");
+            System.out.println("Try another.");
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        JavaDataApp data = new JavaDataApp();
+
+        while (true) {
+            String my_url = data.input();
+            if (my_url.equals("")) {
+                System.out.println("Exiting program");
+                break;
+            }
+            data.handleURL(my_url);
+        }
+
+        //String URL = "https://rest.coinapi.io/v1/exchangerate/"+ticker+"/USD?apikey=E45F127F-46D7-46C3-8C5E-4A96413B319C";
+        //String URL = "https://rest.coinapi.io/v1/exchangerate/USD?apikey=E45F127F-46D7-46C3-8C5E-4A96413B319C&invert=true&output_format=csv";
+        //Backup plan if URL doesnt work, use this CSV
+        //String URL = "https://rest.coinapi.io/v1/exchangerate/USD?apikey=E45F127F-46D7-46C3-8C5E-4A96413B319C";
+    }
+
+    // copied from Jason Millers Bike project
+    private static InputStream openURL (String http) {
+        URL url;
+        InputStream source = null;
+        try {
+            url = new URL(http);
+            source = url.openStream();
+        } catch (Exception e) {
+            System.err.println("Cannot open URL "+http);
+            System.err.println(e);
+        }
+        return source;
+    }
+
+    // copied
+    private static void closeStream (InputStream is) {
+        try {
+            is.close();
+        } catch (Exception e) {
+            System.err.println("Could not close the input stream.");
+            System.err.println(e);
+        }
+    }
+}
